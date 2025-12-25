@@ -3,60 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <title>Weather App</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
     <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #74ebd5, #acb6e5);
             height: 100vh;
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
+            background: linear-gradient(135deg, #74ebd5, #acb6e5);
         }
 
         .weather-container {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            width: 300px;
+            width: 340px;
+            padding: 30px;
             text-align: center;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            font-weight: 600;
         }
 
         input {
-            width: 90%;
-            padding: 8px;
-            margin-bottom: 10px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            outline: none;
+            margin-bottom: 15px;
+            font-size: 14px;
         }
 
         button {
-            padding: 8px 15px;
+            width: 100%;
+            padding: 12px;
             border: none;
+            border-radius: 8px;
             background: #184270;
             color: white;
+            font-size: 15px;
             cursor: pointer;
-            border-radius: 5px;
+            transition: background 0.3s;
         }
 
         button:hover {
-            background: #0056b3;
+            background: #0f2f55;
         }
 
         .result {
-            margin-top: 15px;
+            margin-top: 20px;
         }
 
         .temp {
-            font-size: 32px;
-            font-weight: bold;
+            font-size: 42px;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        .condition {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .details {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .loading {
+            font-size: 14px;
+            color: #555;
         }
     </style>
 </head>
+
 <body>
 
 <div class="weather-container">
-    <h2>Weather App 🌤️</h2>
+    <h2>🌤️ Weather App</h2>
+
     <input type="text" id="locationInput" placeholder="Enter city name">
-    <br>
     <button onclick="getWeather()">Get Weather</button>
 
     <div class="result" id="result"></div>
@@ -69,35 +119,39 @@
         const location = document.getElementById("locationInput").value;
         const resultDiv = document.getElementById("result");
 
-        if (location === "") {
-            resultDiv.innerHTML = "<p>Please enter a location</p>";
+        if (!location) {
+            resultDiv.innerHTML = `<p class="error">Please enter a city name</p>`;
             return;
         }
+
+        resultDiv.innerHTML = `<p class="loading">Fetching weather data...</p>`;
 
         const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${location}&aqi=yes`;
 
         fetch(url)
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
                 if (data.error) {
-                    resultDiv.innerHTML = "<p>Location not found ❌</p>";
+                    resultDiv.innerHTML = `<p class="error">City not found ❌</p>`;
                 } else {
                     resultDiv.innerHTML = `
-                        <p><strong>${data.location.name}, ${data.location.country}</strong></p>
+                        <h3>${data.location.name}, ${data.location.country}</h3>
+                        <img src="https:${data.current.condition.icon}" alt="icon">
                         <div class="temp">${data.current.temp_c}°C</div>
-                        <p>${data.current.condition.text}</p>
-                        <p>Humidity: ${data.current.humidity}%</p>
-                        <p>Wind: ${data.current.wind_kph} km/h</p>
+                        <div class="condition">${data.current.condition.text}</div>
+                        <div class="details">
+                            💧 Humidity: ${data.current.humidity}% <br>
+                            💨 Wind: ${data.current.wind_kph} km/h
+                        </div>
                     `;
                 }
             })
-            .catch(error => {
-                resultDiv.innerHTML = "<p>Error fetching data</p>";
-                console.error(error);
+            .catch(err => {
+                console.error(err);
+                resultDiv.innerHTML = `<p class="error">Error fetching data</p>`;
             });
     }
 </script>
 
 </body>
 </html>
-
